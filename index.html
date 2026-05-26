@@ -1,0 +1,346 @@
+<!DOCTYPE html>
+<html lang="hu">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>NAT és PAT kvíz</title>
+
+<style>
+
+body{
+font-family:Arial,sans-serif;
+background:#0f172a;
+color:white;
+margin:0;
+padding:20px;
+}
+
+.container{
+max-width:1000px;
+margin:auto;
+background:#1e293b;
+padding:25px;
+border-radius:15px;
+box-shadow:0 0 20px rgba(0,0,0,.4);
+}
+
+h1{
+text-align:center;
+color:#38bdf8;
+}
+
+.question{
+margin-bottom:25px;
+padding:15px;
+background:#334155;
+border-radius:10px;
+transition:0.3s;
+}
+
+button{
+background:#38bdf8;
+border:none;
+padding:12px 20px;
+border-radius:8px;
+font-size:16px;
+font-weight:bold;
+cursor:pointer;
+}
+
+button:hover{
+background:#0ea5e9;
+}
+
+.result{
+margin-top:25px;
+font-size:22px;
+font-weight:bold;
+text-align:center;
+}
+
+.correct{
+color:#22c55e;
+}
+
+.wrong{
+color:#ef4444;
+}
+
+.feedback{
+margin-top:10px;
+font-weight:bold;
+}
+
+</style>
+</head>
+
+<body>
+
+<div class="container">
+
+<h1>NAT és PAT kvíz</h1>
+
+<form id="quizForm"></form>
+
+<div style="text-align:center;">
+<button type="button" onclick="checkQuiz()">Kvíz kiértékelése</button>
+</div>
+
+<div id="result" class="result"></div>
+
+</div>
+
+<script>
+
+const questions=[
+
+{
+question:"1. Mi a NAT elsődleges feladata?",
+answers:[
+"IP-címek fordítása különböző hálózatok között",
+"DNS rekordok kezelése",
+"Hálózati kábelek titkosítása"
+],
+correct:0
+},
+
+{
+question:"2. Mi a különbség privát és publikus IP között?",
+answers:[
+"A publikus interneten egyedi, a privát csak belső hálózatban használható",
+"A privát gyorsabb",
+"A publikus csak routeren használható"
+],
+correct:0
+},
+
+{
+question:"3. Mi az a PAT?",
+answers:[
+"Több belső IP-cím egy publikus IP mögé helyezése portok alapján",
+"Titkosítási algoritmus",
+"Routing protokoll"
+],
+correct:0
+},
+
+{
+question:"4. Miért használják a NAT Overload megoldást?",
+answers:[
+"Egy publikus IP-címet több kliens használhat",
+"Automatikusan növeli a sávszélességet",
+"Csökkenti a ping időt"
+],
+correct:0
+},
+
+{
+question:"5. Mi a különbség statikus és dinamikus NAT között?",
+answers:[
+"A statikus fix hozzárendelést, a dinamikus címkészletet használ",
+"A dinamikus gyorsabb",
+"A statikus csak IPv6 alatt működik"
+],
+correct:0
+},
+
+{
+question:"6. Mire használható a port forwarding?",
+answers:[
+"Külső kapcsolat továbbítása belső eszközre",
+"Útvonalak összegzése",
+"Switch portok kikapcsolása"
+],
+correct:0
+},
+
+{
+question:"7. Mi a NAT tábla szerepe?",
+answers:[
+"Nyilvántartja a címfordításokat",
+"Tárolja a routing protokollokat",
+"DNS cache-t kezel"
+],
+correct:0
+},
+
+{
+question:"8. Melyik Cisco paranccsal ellenőrizhető a NAT működése?",
+answers:[
+"show ip nat translations",
+"show interfaces trunk",
+"show access-lists"
+],
+correct:0
+},
+
+{
+question:"9. Miért lehet problémás a NAT VPN esetén?",
+answers:[
+"Megváltoztathatja a VPN csomagok fejlécét",
+"A VPN nem használ IP-címeket",
+"Csökkenti a DHCP lease időt"
+],
+correct:0
+},
+
+{
+question:"10. Miért fontos a NAT az IPv4 világában?",
+answers:[
+"Segít az IP-címhiány kezelésében",
+"Gyorsítja a DNS működését",
+"Csökkenti a MAC táblák méretét"
+],
+correct:0
+},
+
+{
+question:"11. Melyik privát IP tartomány helyes?",
+answers:[
+"192.168.0.0/16",
+"11.0.0.0/8",
+"210.0.0.0/8"
+],
+correct:0
+},
+
+{
+question:"12. Melyik NAT típus használ fix egy-egy kapcsolatot?",
+answers:[
+"Statikus NAT",
+"PAT",
+"NAT Overload"
+],
+correct:0
+},
+
+{
+question:"13. Mi történik PAT használatakor?",
+answers:[
+"A portszámok segítenek megkülönböztetni a kapcsolatokat",
+"A router új IP-címeket generál",
+"Minden kliens külön publikus címet kap"
+],
+correct:0
+},
+
+{
+question:"14. Melyik parancs konfigurálhat NAT Overloadot Cisco eszközön?",
+answers:[
+"ip nat inside source list 1 interface g0/0 overload",
+"ip route overload enable",
+"nat enable interface"
+],
+correct:0
+},
+
+{
+question:"15. Mi a NAT egyik biztonsági előnye?",
+answers:[
+"A belső hálózat címei nem látszanak közvetlenül kívülről",
+"Automatikusan titkosítja a forgalmat",
+"Blokkol minden ICMP csomagot"
+],
+correct:0
+}
+
+];
+
+const form=document.getElementById("quizForm");
+
+questions.forEach((q,index)=>{
+
+let html=`
+<div class="question">
+<h3>${q.question}</h3>
+`;
+
+q.answers.forEach((a,i)=>{
+
+html+=`
+<label>
+<input type="radio" name="q${index}" value="${i}">
+${a}
+</label><br>
+`;
+
+});
+
+html+="</div>";
+
+form.innerHTML+=html;
+
+});
+
+function checkQuiz(){
+
+let score=0;
+
+document.querySelectorAll(".feedback").forEach(el=>el.remove());
+
+document.querySelectorAll(".question").forEach(q=>{
+q.style.border="none";
+});
+
+questions.forEach((q,index)=>{
+
+let selected=document.querySelector(`input[name=q${index}]:checked`);
+let box=document.querySelectorAll(".question")[index];
+
+if(selected && parseInt(selected.value)===q.correct){
+
+score++;
+
+box.style.border="3px solid #22c55e";
+
+let feedback=document.createElement("div");
+feedback.className="feedback";
+feedback.style.color="#22c55e";
+feedback.innerHTML="✔ Helyes válasz";
+
+box.appendChild(feedback);
+
+}else{
+
+box.style.border="3px solid #ef4444";
+
+let feedback=document.createElement("div");
+feedback.className="feedback";
+feedback.style.color="#ef4444";
+feedback.innerHTML=`✖ Helyes válasz: <b>${q.answers[q.correct]}</b>`;
+
+box.appendChild(feedback);
+
+}
+
+});
+
+const result=document.getElementById("result");
+
+result.innerHTML=`Eredmény: ${score}/${questions.length}`;
+
+if(score>=13){
+
+result.className="result correct";
+result.innerHTML+="<br>Kiváló! A NAT tábla büszkén figyel.";
+
+}
+else if(score>=8){
+
+result.className="result";
+result.innerHTML+="<br>Nem rossz. A portfordítás még nem fordult teljesen ellened.";
+
+}
+else{
+
+result.className="result wrong";
+result.innerHTML+="<br>Gyakorlás ajánlott. Valahol egy router kétségbeesetten keres szabad publikus címet.";
+
+}
+
+}
+
+</script>
+
+</body>
+</html>
